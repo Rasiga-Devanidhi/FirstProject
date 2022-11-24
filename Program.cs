@@ -10,6 +10,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//Changes made in GitHub 
+AWSOptions awsOptions = builder.Configuration.GetAWSOptions();
+builder.Services.AddDefaultAWSOptions(awsOptions);
+
+
+
 builder.Services.AddScoped<IDataAccessProvider, DataAccessDynamoDBProvider>();
 Task t = DynamoDBInitializer.InitializeDynamoDB();
 t.Wait();
