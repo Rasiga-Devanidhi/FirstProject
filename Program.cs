@@ -35,6 +35,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.pause();
-
-
+app.start();
