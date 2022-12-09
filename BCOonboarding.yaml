@@ -1,0 +1,1650 @@
+openapi: 3.0.3
+info:
+  title: BCO Onboarding Interface Catalogue
+  description: >-
+    Business Banking Onboarding Application API coordinates the activities
+    required to complete the onboarding process.
+  version: 1.0.0
+tags:
+  - name: Individual Management Interface
+    description: >-
+      The APIs and events related to the management of indidviduals who are
+      existing customers.
+  - name: Identity Management Interface
+    description: >-
+      ,Authenticate users to support online access and authorisation for selected activities. In most cases these operations would be carried out by the API Gateway integrated directly with the IDAM system using Financial Grade OpenID (FAPI). Whatever the details, the onboarding and API processed will leverage existing IDAM capabilities within the bank and we need not dwell on implementation details in this page.
+  - name: Document Management Interface
+    description: |-
+      Cross-domain service for document and records management
+  - name: Correspondence Interface Catalogue
+    description: >-
+      To support the outbound correspondence with customers and onboarding
+      applicants. In many organisations this is supported via a marketing or
+      unified communication platform
+  - name: Regulatory Compliance Interface
+    description: >-
+      The business onboarding process requires various regulatory compliance
+      checks such as sanctions, polically exposed persons, anti-money-laundering
+      etc. It is anticipated we will use the existing API to support those
+      checks.
+  - name: Customer Agreement Interface
+    description: >-
+      APIs required as a dependency for customer onboarding. At some point in the onboarding process, the customer needs to agree to certain T&Cs. This API allows the process to access the relevant T&C and then link the customer consent with those T&C.
+  - name: Entity Management Interface
+    description: >-
+      This interface provides access to entities who are already business customers. Ideally, Party reference data is polymorphic - encompassing both Individuals and Business Entities. However, within the scope of this current project it is assumed that individual data is supplied by an existing API (owned by Netbank) whereas Entity APIs must be built. Hence, we have split the two party types in to separate interface.
+paths:
+  /prd/v1/parties:
+    post:
+      tags:
+        - Individual Management Interface
+      summary: Create a new individual, which is done as part of internet banking.
+      description: >-
+        This call is to create a new individual used during the onboarding
+        process.
+      operationId: CreateIndividual
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIndividual'
+      responses:
+        '200':
+          description: Individual onboarding request completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateIndividualRef'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+      security:
+        - Jwt-Auth:
+            - ''
+  /prd/v1/partiesQueryParam:
+    get:
+      tags:
+        - Individual Management Interface
+      summary: search individual TBD
+      description: This call is to search individual based on the query parameter.
+      operationId: searchIndividual
+      parameters:
+        - name: email
+          in: query
+          description: CIF of individual to be retrieved.
+          required: true
+          schema:
+            type: string
+            example: test@gmail.com
+      responses:
+        '200':
+          description: >-
+            search for an Individual details successful based on the query
+            parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/retrieveIndividual'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+      security:
+        - Jwt-Auth:
+            - ''
+  /prd/v1/parties{id}:
+    get:
+      tags:
+        - Individual Management Interface
+      summary: Retrieve individual by Id
+      description: This call is to Retrieve individual by the Id.
+      operationId: retrieveIndividualById
+      parameters:
+        - name: id
+          in: path
+          description: CIF of individual to be retrieved.
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 4827344
+      responses:
+        '200':
+          description: Get the Individual details using the Id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/retrieveIndividual'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+      security:
+        - correspondenceAuth:
+            - write:admin
+            - read:staff
+    put:
+      tags:
+        - Individual Management Interface
+      summary: Update individual detail by Id
+      description: This call is to Retrieve individual by the Id.
+      operationId: UpdateIndividualById
+      parameters:
+        - name: id
+          in: path
+          description: Update individual based on the Id.
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 4827344
+      responses:
+        '200':
+          description: Individual details is updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateIndividualById'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+      security:
+        - correspondenceAuth:
+            - write:admin
+            - read:staff
+  /prd/v1/parties{id}/documentation:
+    post:
+      tags:
+        - Individual Management Interface
+      summary: >-
+        As part of individual onboarding process, upload the necessary
+        documents.
+      description: >-
+        This call is to upload the necessary documents for the individual
+        onboarding process.
+      operationId: addOnboardingDocumentation
+      parameters:
+        - name: id
+          in: path
+          description: CIF Id of the individual associated with onboarding documentation.
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 4827344
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OnboadingDocumentation'
+      responses:
+        '200':
+          description: Individual onboarding Documents uploaded completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboadingDocumentationRef'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+      security:
+        - Jwt-Auth:
+            - ''
+            
+  /TBD/v1/AuthenticateUser:
+    post:
+      tags:
+        - Identity Management Interface
+      summary: Authenticate an end-user
+      description: Authenticate an end-user via credentials plus MFA 
+      operationId: AuthenticateUser
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/AuthenticateUser"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+            
+            
+  /TBD/v1/AuthenticateSystem:
+    post:
+      tags:
+        - Identity Management Interface 
+      summary: Authenticate an internal system 
+      description: Authenticate an internal system using 2-legged Oauth
+      operationId: AuthenticateSystems
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/AuthenticateSystem"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+    
+  /TBD/v1/RegisterUser:
+    post:
+      tags:
+        - Identity Management Interface
+      summary: Register a new user in the system  
+      description: Register a new user in the system
+      operationId: RegisterUser
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/RegisterUser"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+          
+          
+          
+  /TBD/v1/UserPasswordreset:
+    post:
+      tags:
+        - Identity Management Interface
+      summary: Process a password reset
+      description: Process a password reset for an authenticated user
+      operationId: UserPasswordReset
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/UserPasswordreset"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+          
+          
+  /TBD/v1/TokenManagement:
+    post:
+      tags:
+        - Identity Management Interface
+      summary: Create and manage system tokens 
+      description: Create and manage system tokens to support system authentication 
+      operationId: TokenManagement
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/TokenManagement"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+
+  /dm/v1/documents:
+    post:
+      tags:
+        - Document Management Interface
+      summary: Store a document for indexing
+      description: Store a document for indexing and later retrieval 
+      operationId: StoreDocument
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                fileName:
+                  type: string
+                  format: binary
+      
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/StoreDocument"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+      security: [
+            Jwt-Auth:  []
+            ]
+    get:
+      tags:
+        - Document Management Interface 
+      summary: Search for a document
+      description: Search for documents matching specific criteria 
+      operationId: SearchDocument  
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/SearchDocument"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+      security: [
+            Jwt-Auth:  []
+            ]
+          
+          
+  /dm/v1/documents/{id}:
+    get:
+      tags:
+        - Document Management Interface 
+      summary: Retrieval for a document
+      description: Retrieve a specific document by its ID 
+      operationId: FetchDocument  
+      parameters:
+        - name: id
+          in: path
+          description: ID of customer to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+          
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/FetchDocuments"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+            
+  /TBD/ValidateEmail:
+    post:
+      tags:
+        - Correspondence Interface Catalogue
+      summary: Validate Email by sending OTP
+      description: Send an OTP to the given Email ID for validation.
+      operationId: sendOtp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/verifyEmail'
+      responses:
+        '200':
+          description: Otp sent successfully to the provided Email Id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendOtp'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+  /TBD/ValidateMobile:
+    post:
+      tags:
+        - Correspondence Interface Catalogue
+      summary: Validate Mobile number by sending OTP
+      description: Send an OTP to the given mobile number for validation.
+      operationId: sendOtpToMobile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/verifyMobile'
+      responses:
+        '200':
+          description: Otp sent successfully to the provided mobile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendOtpToMobile'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+      security:
+        - Jwt-Auth:
+            - ''
+  /TBD/OnboardingInvitation:
+    post:
+      tags:
+        - Correspondence Interface Catalogue
+      summary: Onboarding Invitation to individual
+      description: >-
+        Send an email to an individual inviting them to onboard in support of an
+        entity onboarding.
+      operationId: sendIndividualOnboardInvite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndividualOnboard'
+      responses:
+        '200':
+          description: Individual onboard request sent successfully.
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+      security:
+        - correspondenceAuth:
+            - write:admin
+            - read:staff
+  /reg/v1/kyc-check:
+    post:
+      tags:
+        - Regulatory Compliance Interface
+      summary: KYC check
+      description: This call is to perform the KYC check.
+      operationId: initiateKYC
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InitiateKYC'
+      responses:
+        '200':
+          description: KYC to onboard individual has been initiated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiateKYCRef'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+      security:
+        - Jwt-Auth:
+            - ''
+  /reg/v1/fnc-check:
+    post:
+      tags:
+        - Regulatory Compliance Interface
+      summary: Financial Crime check
+      description: This call is to perform the Financial crime check.
+      operationId: initiateFinCrimeCheck
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InitiateFCCheck'
+      responses:
+        '200':
+          description: >-
+            Financial Crime check to onboard individual has been initiated
+            successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiateFCRef'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+  /reg/v1/checklist:
+    get:
+      tags:
+        - Regulatory Compliance Interface
+      summary: Compliance checklist data
+      description: >-
+        This call is to get the checklist of data required for regulatory
+        compliance.
+      operationId: getComplianceCheckList
+      responses:
+        '200':
+          description: List the check list of data or activities for compliance check.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getComplianceCheckList'
+        '400':
+          description: Request is invalid - required data is missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '401':
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+        '500':
+          description: Internal Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSchema'
+      security:
+        - correspondenceAuth:
+            - write:admin
+            - read:staff
+            
+
+  /cag/v1/templates/{id}:
+    get:
+        tags:
+        - Customer Agreement Interface
+        summary: Fetch a specific agreement
+        description: Fetch a specific agreement template from a library of agreements
+        operationId: GetTemplate
+        parameters:
+        - name: id
+          in: path
+          description: ID of pet to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+        responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/GetTemplate"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+                  
+        security: [
+            Jwt-Auth:  []
+            ]
+          
+          
+  /cag/v1/agreements:    
+    post:
+      tags:
+        - Customer Agreement Interface 
+      summary: Associate an agreement with a specific customer 
+      description: Associate an agreement 
+      operationId: RegisterAgreement
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/RegisterTemplate"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+        
+      security: [
+            Jwt-Auth:  []
+            ]          
+                  
+    get:
+      tags:
+      - Customer Agreement Interface
+      summary: Search for an agreement
+      description: Search for an agreement based on various query parameter TBD 
+      operationId: Search
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Search"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+                  
+      security: [
+            Jwt-Auth:  []
+            ]        
+  
+  /cag/v1/agreements/{id}:       
+    get:
+      tags:
+       - Customer Agreement Interface
+      summary: Get a specific agreement by its ID
+      description: Get a specific agreement 
+      operationId: GetAgreement
+      parameters:
+        - name: id
+          in: path
+          description: ID of customer to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/GetAgreement"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+      security: [
+            Jwt-Auth:  []
+            ]    
+ 
+  /prd/v1/parties:
+    post:
+      tags:
+        - Entity Management Interface
+      summary: Create a new Entity
+      description: Create a new Entity 
+      operationId: Create
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Create"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+            
+    get:
+      tags:
+        - Entity Management Interface
+      summary: Search for Parties
+      description: Search for Parties based on metadata
+      operationId: SearchParties
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Search2"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+    
+  /prd/v1/parties/{id}:
+    get:
+      tags:
+        - Entity Management Interface
+      summary: Get a specific party 
+      description: Get a specific party by its Id
+      operationId: Get Details
+      parameters:
+        - name: id
+          in: path
+          description: ID of customer to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/GetDetails"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+          
+          
+          
+    patch:
+      tags:
+        - Entity Management Interface
+      summary: Update data associated with a party
+      description: Update data associated with a party
+      operationId: UpdataData
+      parameters:
+        - name: id
+          in: path
+          description: ID of customer to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Update"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+          
+          
+  /prd/v1/parties/{id}/documents:
+    post:
+      tags:
+        - Entity Management Interface
+      summary: Attach a document
+      description: Attach a document to an Entity
+      operationId: AddDocument
+      parameters:
+        - name: id
+          in: path
+          description: ID of customer to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                  format: binary
+      responses:
+          200:
+            description: Individual onboarding Documents uploaded completed successfully
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/AddDocument"
+          400:
+            description: Request is invalid - required data is missing
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          401:
+            description: Unauthorised
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          500:
+            description: Internal Server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ErrorSchema"
+          
+      security: [
+            Jwt-Auth:  []
+            ]
+
+          
+  
+components:
+  schemas:
+    CreateIndividual:
+      title: CreateIndividual
+      type: object
+      properties:
+        First name:
+          type: string
+          description: First Name of the individual
+          example: John
+        Middle name:
+          type: string
+          description: Middle Name of the individual
+          example: h
+        Last name:
+          type: string
+          description: Last Name of the individual
+          example: Smith
+        DOB:
+          type: string
+          format: Date
+          description: Date of Birth of the individual
+          example: 09/11/2000
+        email:
+          description: email id of the individual
+          type: string
+          example: test@gmail.com
+        Address:
+          type: string
+          description: Permanent Address of the individual
+          example: 3, MainStreet, Sydney
+        Mobile Number:
+          description: Contact number of the individual
+          type: integer
+          minLength: 10
+          maxLength: 10
+          example: 1243548499
+    CreateIndividualRef:
+      title: CreateIndividualRef
+      type: object
+      properties:
+        CIFId:
+          description: CIF Id of the individual
+          type: integer
+          example: 4827344
+        emailId:
+          description: email id of the individual
+          type: string
+          example: test@gmail.com
+    retrieveIndividual:
+      title: retrieveIndividual
+      type: object
+      properties:
+        First name:
+          type: string
+          description: First Name of the individual
+          example: John
+        Middle name:
+          type: string
+          description: Middle Name of the individual
+          example: h
+        Last name:
+          type: string
+          description: Last Name of the individual
+          example: Smith
+        DOB:
+          type: string
+          format: Date
+          description: Date of Birth of the individual
+          example: 09/11/2000
+        email:
+          description: email id of the individual
+          type: string
+          example: test@gmail.com
+        Address:
+          type: string
+          description: Permanent Address of the individual
+          example: 3, MainStreet, Sydney
+        Mobile Number:
+          description: Contact number of the individual
+          type: integer
+          minLength: 10
+          maxLength: 10
+          example: 1243548499
+        CIFId:
+          description: CIF Id of the individual
+          type: integer
+          example: 4827344
+    UpdateIndividualById:
+      title: UpdateIndividualById
+      type: object
+      properties:
+        email:
+          description: new email id of the individual
+          type: string
+          example: test1@gmail.com
+        Address:
+          type: string
+          description: new Address of the individual
+          example: 3, xx Street, Sydney
+        Mobile Number:
+          description: new Contact number of the individual
+          type: integer
+          minLength: 10
+          maxLength: 10
+          example: 1273633849
+    OnboadingDocumentation:
+      title: OnboadingDocumentation
+      type: object
+      properties:
+        email:
+          description: new email id of the individual
+          type: string
+          example: test1@gmail.com
+        filename:
+          description: upload the file for onboarding process.
+          type: string
+          format: binary
+    OnboadingDocumentationRef:
+      title: OnboadingDocumentationRef
+      type: object
+      properties:
+        id:
+          description: CIFID
+          type: integer
+          example: 4827344
+        Message:
+          description: Onboarding Documents uploaded successfully.
+    verifyEmail:
+      title: verifyEmail
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email Id of the User
+          example: test@gmail.com
+    SendOtp:
+      title: SendOtp
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email Id of the User
+          example: test@gmail.com
+        otp:
+          type: integer
+          format: int64
+          description: OTP for validation
+          example: 163826
+    verifyMobile:
+      title: verifyMobile
+      type: object
+      properties:
+        mobilenumber:
+          type: integer
+          description: mobile number of the User
+          example: 628392438
+    SendOtpToMobile:
+      title: SendOtpToMobile
+      type: object
+      properties:
+        mobilenumber:
+          type: integer
+          description: mobile number of the User
+          example: 628392438
+        otp:
+          type: integer
+          format: int64
+          description: OTP for validation
+          example: 163826
+    IndividualOnboard:
+      title: IndividualOnboard
+      type: object
+      properties:
+        name:
+          type: string
+          description: name of the User
+          example: John
+        email:
+          type: string
+          description: email of the User
+          example: test@gmail.com
+        onboardlink:
+          type: string
+          description: Link to onboard the user
+          example: http://www.OnboardIndividual.cba
+    InitiateKYC:
+      title: InitiateKYC
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the User
+          example: test
+        email:
+          type: string
+          description: email id of the User
+          example: test@gmail.com
+        DocumentId:
+          type: string
+          description: Document id for verification
+          example: ALk834792
+        UploadDocument:
+          type: string
+          format: binary
+          description: Upload the document for KYC
+    InitiateKYCRef:
+      title: InitiateKYCRef
+      type: object
+      properties:
+        email:
+          description: email id of user
+          type: string
+          example: test@gmail.com
+        KYCRef:
+          type: integer
+          example: 16382683
+          description: KYC processing reference
+    InitiateFCCheck:
+      title: InitiateFCCheck
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the User
+          example: test
+        email:
+          type: string
+          description: email id of the User
+          example: test@gmail.com
+        CIFId:
+          type: integer
+          description: CIF ID of the User
+          example: 123456
+        DocumentId:
+          type: string
+          description: document Id for the verification
+          example: ALk834792
+        UploadDocument:
+          type: string
+          format: binary
+          description: Upload the document for FC check
+    InitiateFCRef:
+      title: InitiateFCRef
+      type: object
+      properties:
+        CreditRiskScore:
+          type: integer
+          description: calculated credit Risk score
+          example: 163
+    getComplianceCheckList:
+      title: getComplianceCheckList
+      type: object
+      properties:
+        Checklist:
+          type: string
+          description: Checklist for compliance list
+          enum:
+            - Upload required documents
+            - KYC
+            - FCCM
+    AuthenticateUser:
+      title: AuthenticateUser
+      type: integer 
+      properties:
+        data:
+          type: integer 
+          example: 123456
+    AuthenticateSystem:
+      title: AuthenticateSystem
+      type: string 
+      properties:
+        data:
+          type: string 
+          example: XYZ
+    RegisterUser:
+      title: RegisterUser
+      type: object 
+      properties:
+        data:
+          type: string  
+          example: test@gmail.com
+    UserPasswordreset:
+      title: UserPasswordreset
+      type: object 
+      properties:
+        data:
+          type: string 
+          example: reset@gmail.com
+    TokenManagement:
+      title: TokenManagement
+      type: object 
+      properties:
+        data:
+          type: integer 
+          example: 123456
+    StoreDocument:
+      title: StoreDocument
+      type: object
+      properties:
+        template:
+          type: object
+          example: xyzDocument  
+    SearchDocument:
+      title: SearchDocument
+      type: integer 
+      properties:
+        template:
+          type: object
+          example: 123 
+    FetchDocuments:
+      title: FetchDocuments
+      type: integer
+      properties:
+        template: 
+          type: object 
+          example: 123 
+    GetTemplate:
+      title: GetTemplateById
+      type: object 
+      properties: 
+        template:
+          type: string 
+          example: template-1
+            
+    RegisterTemplate:
+      title: RegisterTemplate
+      type: object
+      properties: 
+        template:
+          type: string 
+          example: agreement-2
+            
+    GetAgreement:
+      title: GetAnAgreement
+      type: object
+      properties:
+        template:
+          type: string
+          example: agreement-3
+            
+    Search:
+      title: SearchArgreement
+      type: object
+      properties:
+        template:
+          type: string
+          example: agreement-4
+    
+    Create:
+        title: Create
+        type:  string
+        properties: 
+          template:
+            type: string 
+            example: test@gmail.com
+            
+    Search2:
+        title: Search
+        type: string
+        properties: 
+          template:
+            type: string 
+            example: test@gmail.com
+            
+    GetDetails:
+        title: GetDetails
+        type: integer
+        properties:
+          template:
+            type: string
+            example: 12
+            
+    Update:
+        title: Update
+        type: integer
+        properties:
+          template:
+            type: string
+            example: Test
+            
+    AddDocument:
+        title: AddDocument
+        type: object
+        properties:
+          template:
+            type: object
+            example: document-1
+    ErrorSchema:
+      type: object
+      properties:
+        errorcode:
+          type: string
+          description: >-
+            A code indicating the nature of an error which occurred from backend
+            while processing the API request.
+          enum:
+            - NO_DATA_FOUND
+            - DATA_SERVER_ERROR
+        customMessage:
+          type: string
+        serviceLayer:
+          type: string
+          enum:
+            - EXPERIENCE_SERVICES_LAYER
+            - PROCESS_SERVICES_LAYER
+            - SYSTEM_SERVICES_LAYER
+        errorDetails:
+          type: string
+        exceptionCategory:
+          type: string
+          enum:
+            - COMPLIANCE_EXCEPTION
+            - CONFIGURATION_EXCEPTION
+            - DATA_EXCEPTION
+            - HEALTH_EXCEPTION
+            - NETWORK_EXCEPTION
+            - POLICY_EXCEPTION
+            - RESOURCE_EXCEPTION
+            - SECURITY_EXCEPTION
+            - TRANSACTION_EXCEPTION
+            - SERVICE_EXCEPTION
+  securitySchemes:
+    correspondenceAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            users:read: Grants read access
+            users:write: Grants write access
+            users:admin: Grants access to admin operations
+    Jwt-Auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
